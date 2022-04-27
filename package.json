@@ -1,0 +1,35 @@
+{
+  "name": "mmm-google-driving-time",
+  "version": "1.0.0",
+  "description": "Get info from Google when to start driving based on shortest duration, for the MagicMirror² platform.",
+  "main": "MMM-Google-Driving-Time.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ismarslomic/MMM-Google-Driving-Time.git"
+  },
+  "author": "ismar@slomic.no",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ismarslomic/MMM-Google-Driving-Time/issues"
+  },
+  "homepage": "https://github.com/ismarslomic/MMM-Google-Driving-Time",
+  "dependencies": {},
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --sourcemap=inline",
+    "dev:watch": "npm run dev -- --watch"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-node-resolve": "^13.2.1",
+    "@rollup/plugin-typescript": "^8.3.2",
+    "@types/magicmirror-module": "^2.16.1",
+    "eslint": "^8.14.0",
+    "eslint-config-airbnb-typescript-prettier": "^5.0.0",
+    "prettier": "^2.6.2",
+    "rollup": "^2.70.2",
+    "rollup-plugin-banner2": "^1.2.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^4.6.3"
+  }
+}

@@ -4,7 +4,7 @@ import nodeResolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 import { terser } from 'rollup-plugin-terser'
 
-const pkg = require('./package.json')
+import pkg from './package.json'
 
 // Banner to be placed at the top of the compiled files
 const bannerText = `/*! *****************************************************************************

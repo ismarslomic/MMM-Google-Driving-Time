@@ -74,4 +74,6 @@ The source files are located in the [src](./src) folder.
 
 Compile target files with `npm run build`.
 
+Tests are run with jest `npm test` or `npm run test:coverage` with coverage report.
+
 Contribution for this module is welcome!

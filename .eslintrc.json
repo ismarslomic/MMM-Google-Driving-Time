@@ -6,5 +6,20 @@
   "rules": {
     "no-console": "warn",
     "@typescript-eslint/no-unused-vars": "error"
+  },
+  "settings": {
+    "import/core-modules": [ "node_helper" ]
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "jest": true
+  },
+  "globals": {
+    "Module": true,
+    "Log": true,
+    "waitForAsync": true,
+    "fetchMock": true
   }
 }

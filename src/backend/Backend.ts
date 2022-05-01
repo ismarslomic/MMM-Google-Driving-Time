@@ -4,18 +4,14 @@ import * as NodeHelper from 'node_helper'
 import * as Log from 'logger'
 import { ModuleNotification } from '../constants/ModuleNotification'
 import DrivingTimeService from './DrivingTimeService'
-import { State } from '../types/State'
 
 module.exports = NodeHelper.create({
-  start() {
-    Log.log(`${this.name} helper method started...`)
-  },
 
   async socketNotificationReceived(notification, payload) {
     if (notification === ModuleNotification.JAST_STOCKS_REQUEST) {
       const drivingTime = await DrivingTimeService.requestDrivingTime(payload)
 
-      const response: State = {
+      const response = {
         lastUpdate: Date.now(),
         drivingTime
       }

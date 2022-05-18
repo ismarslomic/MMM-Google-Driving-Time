@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Backend GIVEN requesting driving time WHEN response is successful THEN response is sent via socket 1`] = `
+Object {
+  "drivingTime": Object {
+    "destination": "Gøteborggata 32, 0566 Oslo, Norge",
+    "distance": Object {
+      "description": "203 km",
+      "inMeter": 203466,
+    },
+    "drivingDepartures": Array [
+      Object {
+        "departureTime": Any<Date>,
+        "durationDiff": Object {
+          "description": "-12 min",
+          "inSeconds": -718,
+        },
+        "durationInTraffic": Object {
+          "description": "2 timer 48 min",
+          "inSeconds": 10064,
+        },
+      },
+    ],
+    "duration": Object {
+      "description": "3 timer 0 min",
+      "inSeconds": 10782,
+    },
+    "origin": "Hemsilbreidda 16, 3560 Hemsedal, Norge",
+  },
+  "lastUpdate": Any<Number>,
+}
+`;

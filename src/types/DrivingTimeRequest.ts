@@ -1,9 +1,7 @@
 import { DepartureTime } from './DepartureTime'
 import { DepartureDay } from './DepartureDay'
 
-export type Config = {
-  lastUpdateFormat?: string
-  updateIntervalInSeconds?: number
+export type DrivingTimeRequest = {
   origin: string
   destination: string
   language: string

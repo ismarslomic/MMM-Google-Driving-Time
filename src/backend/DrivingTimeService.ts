@@ -1,41 +1,164 @@
-import { Config } from '../types/Config'
 import * as Log from 'logger'
 import { DrivingTimeResponse } from '../types/DrivingTimeResponse'
 import { HumanizeDuration, HumanizeDurationLanguage } from 'humanize-duration-ts'
+import { DistanceMatrixResponse, Status } from '@googlemaps/google-maps-services-js'
+import { DistanceMatrixRequest } from '@googlemaps/google-maps-services-js/dist/distance'
+import { DrivingDeparture } from '../types/DrivingDeparture'
+import { DrivingTimeRequest } from '../types/DrivingTimeRequest'
+import { DepartureDateUtil } from './DepartureDateUtil'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { Client, TrafficModel, TravelMode } = require('@googlemaps/google-maps-services-js')
 
 const langService = new HumanizeDurationLanguage()
 const humanizer = new HumanizeDuration(langService)
 
-export default class DrivingTimeService {
-  static async requestDrivingTime(config: Config): Promise<DrivingTimeResponse> {
-    Log.info(`Requesting driving time from Google ${config}`)
+export class DrivingTimeService {
+  static async requestDrivingTime(dtRequest: DrivingTimeRequest): Promise<DrivingTimeResponse> {
+    Log.info(`Using Google Distance Matrix Service to calculate driving time`)
 
-    const durationDiffInSeconds = 10523 - 10899
+    const requests = this.createDistanceMatrixRequest(dtRequest)
+    const promises = Promise.all(requests.map((request) => this.callGoogleMatrixApi(request)))
+
+    return promises
+      .then((responses) => {
+          if (responses.length === 0) {
+            throw Error('The list of responses from Google Distance Matrix API where empty')
+          }
+
+          const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
+          const firstResponse = responses[0]
+          firstResponse.drivingDepartures = drivingDepartures
+          return firstResponse
+        }
+      ).catch((error) => {
+        throw Error(error || error.message || 'Error occurred in one or more of the service calls to Google Distance Matrix API')
+      })
+
+    /*
+  return new Promise((resolve, reject) => {
+    googleClient
+      .distancematrix(dmRequest)
+      .then(async (response) => {
+        // request status: r.data.status === Status.OK
+        // row element status: r.data.rows[0].elements[0].status === Status.OK
+        // check if response.data is undefined, can be undefined if network issues
+        const normalDurationInSeconds = response.data.rows[0].elements[0].duration.value
+        const drivingDepartures = [this.mapToDrivingDeparture(response, dtRequest.language, normalDurationInSeconds, new Date())]
+        resolve(this.mapToDrivingTimeResponse(response, drivingDepartures))
+      })
+      .catch((error) => {
+        reject(error.message)
+      })
+  })*/
+  }
+
+  private static async callGoogleMatrixApi(request: DistanceMatrixRequest): Promise<DrivingTimeResponse> {
+    const googleClient = new Client({})
+
+    return new Promise((resolve, reject) => {
+      googleClient
+        .distancematrix(request)
+        .then(async (response: DistanceMatrixResponse) => {
+          if (!response.data) {
+            reject('Data returned from Google Distance Matrix Service where undefined.')
+          } else if (response.data.status !== Status.OK) {
+            reject(response.data.error_message)
+          } else if (response.data.rows[0].elements[0].status !== Status.OK) {
+            reject(`Status for row data from Google Distance Matrix Service where ${response.data.rows[0].elements[0].status}`)
+          }
+
+          const normalDurationInSeconds = response.data.rows[0].elements[0].duration.value
+          const drivingDepartures = [this.mapToDrivingDeparture(response, request.params.language, normalDurationInSeconds, new Date(request.params.departure_time))]
+          resolve(this.mapToDrivingTimeResponse(response, drivingDepartures))
+        })
+        .catch((error) => {
+          reject(error.message)
+        })
+    })
+  }
+
+  private static createDistanceMatrixRequest(dtRequest: DrivingTimeRequest): DistanceMatrixRequest[] {
+    const departureDates = new DepartureDateUtil(dtRequest.departureDate, dtRequest.departureTimes).getDates()
+
+    return departureDates.map((departureDate) => {
+      return {
+        params: {
+          key: dtRequest.apiKey,
+          departure_time: departureDate.getTime(),
+          origins: [dtRequest.origin],
+          destinations: [dtRequest.destination],
+          language: dtRequest.language,
+          mode: TravelMode.driving,
+          traffic_model: this.mapToTrafficModel(dtRequest.trafficModel)
+        },
+        timeout: 1000 // in milliseconds, 1 second
+      }
+    })
+  }
+
+  private static mapToTrafficModel(trafficModel: string): typeof TrafficModel {
+    if (trafficModel === TrafficModel.optimistic.valueOf()) {
+      return TrafficModel.optimistic
+    } else if (trafficModel === TrafficModel.pessimistic.valueOf()) {
+      return TrafficModel.pessimistic
+    } else {
+      return TrafficModel.best_guess
+    }
+  }
+
+  private static mapToDrivingDeparture(response: DistanceMatrixResponse, language: string, normalDurationInSeconds: number, departureTime: Date): DrivingDeparture {
+    const firstElement = response.data.rows[0].elements[0]
+    const durationDiffInSeconds = firstElement.duration_in_traffic.value - normalDurationInSeconds
+
+    humanizer.addLanguage('shortNo', {
+      y: () => 'y',
+      mo: () => 'mo',
+      w: () => 'w',
+      d: () => 'd',
+      h: () => 't',
+      m: () => 'min',
+      s: () => 's',
+      ms: () => 'ms',
+      decimal: ''
+    })
+
+    let durationDiffDescription = humanizer.humanize(durationDiffInSeconds * 1000, {
+      language: 'shortNo',
+      units: ['h', 'm'],
+      serialComma: false,
+      round: true
+    })
+
+    durationDiffDescription = durationDiffInSeconds <= -60 ? '-' + durationDiffDescription : durationDiffDescription
 
     return {
-      origin: 'VJ27+FP Ulsåk, Norge',
-      destination: 'Gøteborggata 32, 0566 Oslo, Norge',
-      distance: {
-        description: '204 km',
-        inMeter: 203555
-      },
-      duration: {
-        description: '3 timer 2 min',
-        inSeconds: 10899
-      },
+      departureTime: departureTime,
       durationInTraffic: {
-        description: '2 timer 55 min',
-        inSeconds: 10523
+        inSeconds: firstElement.duration_in_traffic.value,
+        description: firstElement.duration_in_traffic.text
       },
       durationDiff: {
-        description: humanizer.humanize(durationDiffInSeconds * 1000, {
-          language: 'no',
-          units: ['h', 'm'],
-          serialComma: false,
-          round: true
-        }),
-        inSeconds: durationDiffInSeconds
+        inSeconds: durationDiffInSeconds,
+        description: durationDiffDescription
       }
+    }
+  }
+
+  private static mapToDrivingTimeResponse(parent: DistanceMatrixResponse, drivingDepartures: DrivingDeparture[]): DrivingTimeResponse {
+    const firstElement = parent.data.rows[0].elements[0]
+
+    return {
+      origin: parent.data.origin_addresses[0],
+      destination: parent.data.destination_addresses[0],
+      distance: {
+        inMeter: firstElement.distance.value,
+        description: firstElement.distance.text
+      },
+      duration: {
+        inSeconds: firstElement.duration.value,
+        description: firstElement.duration.text
+      },
+      drivingDepartures: drivingDepartures
     }
   }
 }

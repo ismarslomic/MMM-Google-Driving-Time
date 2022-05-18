@@ -1,6 +1,7 @@
 import * as Log from 'logger'
 import { Config } from '../types/Config'
 import { ModuleNotification } from '../constants/ModuleNotification'
+import { DepartureDay } from '../types/DepartureDay'
 
 // Global or injected variable declarations
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,8 +20,10 @@ Module.register<Config>('MMM-Google-Driving-Time', {
     origin: undefined,
     destination: undefined,
     language: undefined,
-    trafficMode: 'best_guess',
-    apiKey: undefined
+    trafficModel: 'best_guess',
+    apiKey: undefined,
+    departureDate: DepartureDay.TODAY,
+    departureTimes: [{ hours: 13, minutes: 30 }]
   },
 
   /**
@@ -104,7 +107,7 @@ Module.register<Config>('MMM-Google-Driving-Time', {
    * @private
    */
   loadData() {
-    this.sendSocketNotification(ModuleNotification.JAST_STOCKS_REQUEST, this.config)
+    this.sendSocketNotification(ModuleNotification.DRIVING_TIME_REQUEST, this.config)
   },
 
   /**
@@ -122,9 +125,9 @@ Module.register<Config>('MMM-Google-Driving-Time', {
    *
    */
   socketNotificationReceived(notificationIdentifier: string, payload: unknown) {
-    if (notificationIdentifier === ModuleNotification.JAST_STOCKS_RESPONSE) {
+    if (notificationIdentifier === ModuleNotification.DRIVING_TIME_RESPONSE) {
       this.state = payload
-      Log.log(ModuleNotification.JAST_STOCKS_RESPONSE, this.state)
+      Log.log(ModuleNotification.DRIVING_TIME_RESPONSE, this.state)
       this.updateDom()
     }
   }

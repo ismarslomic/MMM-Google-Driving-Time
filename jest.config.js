@@ -5,5 +5,14 @@ module.exports = {
   testRegex: '(/__tests__/.*)\\.test.ts$',
   testPathIgnorePatterns: ['setupJest.js'],
   setupFilesAfterEnv: ['<rootDir>/setupJest.js'],
-  collectCoverageFrom: ['./src/**/*.ts']
+  collectCoverage: false,
+  collectCoverageFrom: ['./src/**/*.ts'],
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        sourceMap: true,
+        inlineSourceMap: true
+      }
+    }
+  }
 }

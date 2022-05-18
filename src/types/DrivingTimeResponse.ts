@@ -1,3 +1,6 @@
+import { DrivingDuration } from './DrivingDuration'
+import { DrivingDeparture } from './DrivingDeparture'
+
 export type DrivingTimeResponse = {
   /**
    * Resolved address of the origin, based on the origin sent in request
@@ -13,42 +16,15 @@ export type DrivingTimeResponse = {
    * original request, or the origin's region.
    */
   distance: {
-    description: string
     inMeter: number
+    description: string
   }
   /**
-   * The length of time it takes to travel this route, expressed in seconds (inSeconds) and as text (description).
-   * The textual representation is localized according to the query's language parameter.
+   * The length of time it takes to travel this route without taking in account current and historical traffic conditions.
    */
-  duration: {
-    description: string
-    inSeconds: number
-  },
+  duration: DrivingDuration,
   /**
-   * The length of time it takes to travel this route, based on current and historical traffic conditions.
-   * See the traffic_model request parameter for the options you can use to request that the returned value is
-   * optimistic, pessimistic, or a best-guess estimate. The duration is expressed in seconds (inSeconds)
-   * and as text (description). The textual representation is localized according to the query's language parameter.
-   *
-   * The duration in traffic is returned only if all of the following are true:
-   *     - The request includes a departure_time parameter.
-   *     - Traffic conditions are available for the requested route.
-   *     - The mode parameter is set to driving.
+   * The length of time it takes to drive the route on specific departure times in the future
    */
-  durationInTraffic: {
-    description: string
-    inSeconds: number
-  },
-  /**
-   * Difference (in seconds) between the length of time it takes to travel this route (duration.inSeconds) and the
-   * length of time it takes to travel this route based on current and historical traffic conditions
-   * durationInTraffic.inSeconds.
-   *
-   * Negative duration means shorter time to travel based on current and historical traffic conditions, positive means
-   * longer.
-   */
-  durationDiff: {
-    description: string
-    inSeconds: number
-  }
+  drivingDepartures: DrivingDeparture[]
 }

@@ -1,13 +1,13 @@
 import * as Log from 'logger'
 import { DrivingTimeResponse } from '../types/DrivingTimeResponse'
 import { HumanizeDuration, HumanizeDurationLanguage } from 'humanize-duration-ts'
-import { DistanceMatrixResponse, Status } from '@googlemaps/google-maps-services-js'
+import { DistanceMatrixResponse } from '@googlemaps/google-maps-services-js'
 import { DistanceMatrixRequest } from '@googlemaps/google-maps-services-js/dist/distance'
 import { DrivingDeparture } from '../types/DrivingDeparture'
 import { DrivingTimeRequest } from '../types/DrivingTimeRequest'
 import { DepartureDateUtil } from './DepartureDateUtil'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { Client, TrafficModel, TravelMode } = require('@googlemaps/google-maps-services-js')
+const { Client, TrafficModel, TravelMode, Status } = require('@googlemaps/google-maps-services-js')
 
 const langService = new HumanizeDurationLanguage()
 const humanizer = new HumanizeDuration(langService)
@@ -20,19 +20,19 @@ export class DrivingTimeService {
     const promises = Promise.all(requests.map((request) => this.callGoogleMatrixApi(request)))
 
     return promises
-      .then((responses) => {
-          if (responses.length === 0) {
-            throw Error('The list of responses from Google Distance Matrix API where empty')
-          }
-
-          const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
-          const firstResponse = responses[0]
-          firstResponse.drivingDepartures = drivingDepartures
-          return firstResponse
+    .then((responses) => {
+        if (responses.length === 0) {
+          throw Error('The list of responses from Google Distance Matrix API where empty')
         }
-      ).catch((error) => {
-        throw Error(error || error.message || 'Error occurred in one or more of the service calls to Google Distance Matrix API')
-      })
+
+        const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
+        const firstResponse = responses[0]
+        firstResponse.drivingDepartures = drivingDepartures
+        return firstResponse
+      }
+    ).catch((error) => {
+      throw Error(error || error.message || 'Error occurred in one or more of the service calls to Google Distance Matrix API')
+    })
 
     /*
   return new Promise((resolve, reject) => {
@@ -57,23 +57,23 @@ export class DrivingTimeService {
 
     return new Promise((resolve, reject) => {
       googleClient
-        .distancematrix(request)
-        .then(async (response: DistanceMatrixResponse) => {
-          if (!response.data) {
-            reject('Data returned from Google Distance Matrix Service where undefined.')
-          } else if (response.data.status !== Status.OK) {
-            reject(response.data.error_message)
-          } else if (response.data.rows[0].elements[0].status !== Status.OK) {
-            reject(`Status for row data from Google Distance Matrix Service where ${response.data.rows[0].elements[0].status}`)
-          }
+      .distancematrix(request)
+      .then(async (response: DistanceMatrixResponse) => {
+        if (!response.data) {
+          reject('Data returned from Google Distance Matrix Service where undefined.')
+        } else if (response.data.status !== Status.OK) {
+          reject(response.data.error_message)
+        } else if (response.data.rows[0].elements[0].status !== Status.OK) {
+          reject(`Status for row data from Google Distance Matrix Service where ${response.data.rows[0].elements[0].status}`)
+        }
 
-          const normalDurationInSeconds = response.data.rows[0].elements[0].duration.value
-          const drivingDepartures = [this.mapToDrivingDeparture(response, request.params.language, normalDurationInSeconds, new Date(request.params.departure_time))]
-          resolve(this.mapToDrivingTimeResponse(response, drivingDepartures))
-        })
-        .catch((error) => {
-          reject(error.message)
-        })
+        const normalDurationInSeconds = response.data.rows[0].elements[0].duration.value
+        const drivingDepartures = [this.mapToDrivingDeparture(response, request.params.language, normalDurationInSeconds, new Date(request.params.departure_time))]
+        resolve(this.mapToDrivingTimeResponse(response, drivingDepartures))
+      })
+      .catch((error) => {
+        reject(error.message)
+      })
     })
   }
 

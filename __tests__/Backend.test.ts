@@ -41,6 +41,7 @@ describe('Backend', () => {
   test('GIVEN starting the module THEN log starting module to console', () => {
     helper.start()
 
+    // eslint-disable-next-line no-console
     expect(console.log).toHaveBeenCalledWith('Starting module helper: MMM-Google-Driving-Time')
   })
 

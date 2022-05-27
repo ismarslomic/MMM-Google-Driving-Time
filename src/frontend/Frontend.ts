@@ -125,9 +125,9 @@ Module.register<Config>('MMM-Google-Driving-Time', {
    *
    */
   socketNotificationReceived(notificationIdentifier: string, payload: unknown) {
-    if (notificationIdentifier === ModuleNotification.DRIVING_TIME_RESPONSE) {
+    if (notificationIdentifier === ModuleNotification.DRIVING_TIME_SUCCESS_RESPONSE) {
       this.state = payload
-      Log.log(ModuleNotification.DRIVING_TIME_RESPONSE, this.state)
+      Log.log(ModuleNotification.DRIVING_TIME_SUCCESS_RESPONSE, this.state)
       this.updateDom()
     }
   }

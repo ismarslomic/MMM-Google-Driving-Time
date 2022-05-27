@@ -1,4 +1,4 @@
-const generateResponse = () => ({
+const successfulResponse = () => ({
   status: 200,
   statusText: 'OK',
   headers: {},
@@ -36,5 +36,19 @@ const generateResponse = () => ({
   }
 })
 
-module.exports = { generateResponse }
+const emptyRowListResponse = () => ({
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {},
+  request: {},
+  data: {
+    'destination_addresses': [],
+    'origin_addresses': [],
+    'rows': [],
+    'status': 'NOT_FOUND'
+  }
+})
+
+module.exports = { successfulResponse, emptyRowListResponse }
 

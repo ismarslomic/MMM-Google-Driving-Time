@@ -1,6 +1,22 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Backend GIVEN requesting driving time WHEN response is successful THEN response is sent via socket 1`] = `
+exports[`Backend GIVEN error status WHEN google api responds THEN response with error is sent via socker 1`] = `
+Object {
+  "details": "Error occurred in one or more of the service calls to Google Distance Matrix API",
+  "error": "Error retrieving driving time, check console.",
+  "lastUpdate": Any<Number>,
+}
+`;
+
+exports[`Backend GIVEN invalid request WHEN response is failed THEN response with error is sent via socker 1`] = `
+Object {
+  "details": "Array of departureTimes is not valid. Maybe it is undefined, null or empty?",
+  "error": "Error retrieving driving time, check console.",
+  "lastUpdate": Any<Number>,
+}
+`;
+
+exports[`Backend GIVEN valid request WHEN response is successful THEN response is sent via socket 1`] = `
 Object {
   "drivingTime": Object {
     "destination": "Gøteborggata 32, 0566 Oslo, Norge",

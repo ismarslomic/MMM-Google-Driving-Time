@@ -14,7 +14,7 @@ const humanizer = new HumanizeDuration(langService)
 
 export class DrivingTimeService {
   static async requestDrivingTime(dtRequest: DrivingTimeRequest): Promise<DrivingTimeResponse> {
-    Log.info(`Using Google Distance Matrix Service to calculate driving time`)
+    Log.info(`Requesting driving time from Google.`)
 
     const requests = this.createDistanceMatrixRequest(dtRequest)
     const promises = Promise.all(requests.map((request) => this.callGoogleMatrixApi(request)))
@@ -31,7 +31,10 @@ export class DrivingTimeService {
         return firstResponse
       }
     ).catch((error) => {
-      throw Error(error || error.message || 'Error occurred in one or more of the service calls to Google Distance Matrix API')
+      if (error) {
+        throw Error(error.message || error)
+      } else
+        throw Error('Error occurred in one or more of the service calls to Google Distance Matrix API')
     })
 
     /*

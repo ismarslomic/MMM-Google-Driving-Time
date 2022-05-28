@@ -1,4 +1,4 @@
-import { successfulResponse, emptyRowListResponse } from '../__mocks__/mockResponse'
+import { successfulResponse, notFoundStatusResponse, undefinedDataResponse } from '../__mocks__/mockResponse'
 import { Config } from '../src/types/Config'
 import { Client } from '@googlemaps/google-maps-services-js'
 import { ModuleNotification } from '../src/constants/ModuleNotification'
@@ -84,7 +84,7 @@ describe('Backend', () => {
   })
 
   test('GIVEN error status WHEN google api responds THEN response with error is sent via socker', async () => {
-    mockedDistancematrix.mockReturnValue(Promise.resolve(emptyRowListResponse()))
+    mockedDistancematrix.mockReturnValue(Promise.resolve(notFoundStatusResponse()))
     helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
 
     jest.useRealTimers()
@@ -95,6 +95,21 @@ describe('Backend', () => {
       lastUpdate: expect.any(Number),
       error: 'Error retrieving driving time, check console.',
       details: 'Error occurred in one or more of the service calls to Google Distance Matrix API'
+    })
+  })
+
+  test('GIVEN undefined data WHEN google api responds THEN response with error is sent via socker', async () => {
+    mockedDistancematrix.mockReturnValue(Promise.resolve(undefinedDataResponse()))
+    helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
+
+    jest.useRealTimers()
+    await global.waitForAsync()
+
+    expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE)
+    expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
+      lastUpdate: expect.any(Number),
+      error: 'Error retrieving driving time, check console.',
+      details: 'Data returned from Google Distance Matrix Service where undefined.'
     })
   })
 

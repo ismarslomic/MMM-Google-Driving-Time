@@ -39,6 +39,7 @@ module.exports = NodeHelper.create({
         details: (error && error.message) || error
       }
 
+      Log.error((error && error.message) || error)
       this.sendSocketNotification(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE, failedResponse)
     }
 

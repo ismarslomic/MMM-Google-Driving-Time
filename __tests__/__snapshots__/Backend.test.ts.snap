@@ -16,6 +16,14 @@ Object {
 }
 `;
 
+exports[`Backend GIVEN undefined data WHEN google api responds THEN response with error is sent via socker 1`] = `
+Object {
+  "details": "Data returned from Google Distance Matrix Service where undefined.",
+  "error": "Error retrieving driving time, check console.",
+  "lastUpdate": Any<Number>,
+}
+`;
+
 exports[`Backend GIVEN valid request WHEN response is successful THEN response is sent via socket 1`] = `
 Object {
   "drivingTime": Object {

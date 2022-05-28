@@ -21,11 +21,7 @@ export class DrivingTimeService {
 
     return promises
     .then((responses) => {
-        if (responses.length === 0) {
-          throw Error('The list of responses from Google Distance Matrix API where empty')
-        }
-
-        const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
+       const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
         const firstResponse = responses[0]
         firstResponse.drivingDepartures = drivingDepartures
         return firstResponse

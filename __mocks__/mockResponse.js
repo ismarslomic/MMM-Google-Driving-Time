@@ -36,7 +36,7 @@ const successfulResponse = () => ({
   }
 })
 
-const emptyRowListResponse = () => ({
+const notFoundStatusResponse = () => ({
   status: 200,
   statusText: 'OK',
   headers: {},
@@ -50,5 +50,14 @@ const emptyRowListResponse = () => ({
   }
 })
 
-module.exports = { successfulResponse, emptyRowListResponse }
+const undefinedDataResponse = () => ({
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {},
+  request: {},
+  data: undefined
+})
+
+module.exports = { successfulResponse, notFoundStatusResponse, undefinedDataResponse }
 

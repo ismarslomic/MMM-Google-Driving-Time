@@ -32,10 +32,11 @@ export class DepartureDateUtil {
 
   /**
    * Creates departure dates for each _departureTime_ on the _departureDay_.
+   * Departure dates in past are filtered are ignored.
    *
    * @returns list of departure dates in the future (compared with _dateNow_) sorted ascending
    */
-  getDates(): Date[] {
+  getDatesInFuture(): Date[] {
     const dates = this._departureTimes.map((departureTime: DepartureTime) => {
       const copyDepartureDate = new Date(this._departureDate)
       copyDepartureDate.setHours(departureTime.hours)

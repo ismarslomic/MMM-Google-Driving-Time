@@ -4,7 +4,6 @@ module.exports = {
   testEnvironment: 'node',
   testRegex: '(/__tests__/.*)\\.test.ts$',
   testPathIgnorePatterns: ['setupJest.js'],
-  setupFilesAfterEnv: ['<rootDir>/setupJest.js'],
   collectCoverage: false,
   collectCoverageFrom: ['./src/**/*.ts'],
   globals: {
@@ -14,5 +13,8 @@ module.exports = {
         inlineSourceMap: true
       }
     }
-  }
+  },
+  setupFilesAfterEnv: [
+    '<rootDir>/setupJest.js'
+  ]
 }

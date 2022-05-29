@@ -89,12 +89,12 @@ describe('DepartureDateUtil', () => {
   describe('GIVEN departureDay is TODAY', () => {
     test('WHEN departureTimes are in the future THEN all departure dates shall be returned', () => {
       const util = new DepartureDateUtil(DepartureDay.TODAY, departureTimes)
-      const dates: Date[] = util.getDates()
+      const dates: Date[] = util.getDatesInFuture()
 
       expect(dates.length).toEqual(3)
     })
 
-    test('WHEN departureTimes are in the past THEN only departure dates in the future shall be returned', () => {
+    test('WHEN some departureTimes are in the past THEN only departure dates in the future shall be returned', () => {
       departureTimes.push(
         {
           hours: 8,
@@ -106,9 +106,27 @@ describe('DepartureDateUtil', () => {
         }
       )
       const util = new DepartureDateUtil(DepartureDay.TODAY, departureTimes)
-      const dates: Date[] = util.getDates()
+      const dates: Date[] = util.getDatesInFuture()
 
       expect(dates.length).toEqual(3)
+    })
+
+    test('WHEN all departureTimes are in the past THEN empty list shall be returned', () => {
+      departureTimes = [
+        {
+          hours: 8,
+          minutes: 0
+        },
+        {
+          hours: 8,
+          minutes: 30
+        }
+      ]
+
+      const util = new DepartureDateUtil(DepartureDay.TODAY, departureTimes)
+      const dates: Date[] = util.getDatesInFuture()
+
+      expect(dates.length).toEqual(0)
     })
 
     test('WHEN departureTimes are unsorted THEN all departure dates shall be returned sorted ascending', () => {
@@ -127,7 +145,7 @@ describe('DepartureDateUtil', () => {
         }
       ]
       const util = new DepartureDateUtil(DepartureDay.TODAY, departureTimes)
-      const dates: Date[] = util.getDates()
+      const dates: Date[] = util.getDatesInFuture()
 
       expect(dates.length).toEqual(3)
       expect(dates[0]).timesAreEqual(departureTimes[1])
@@ -139,7 +157,7 @@ describe('DepartureDateUtil', () => {
   describe('GIVEN departureDay is TOMORROW', () => {
     test('WHEN departureTimes are in the future THEN all departure dates shall be returned', () => {
       const util = new DepartureDateUtil(DepartureDay.TOMORROW, departureTimes)
-      const dates: Date[] = util.getDates()
+      const dates: Date[] = util.getDatesInFuture()
 
       expect(dates.length).toEqual(3)
     })
@@ -156,7 +174,7 @@ describe('DepartureDateUtil', () => {
         }
       )
       const util = new DepartureDateUtil(DepartureDay.TOMORROW, departureTimes)
-      const dates: Date[] = util.getDates()
+      const dates: Date[] = util.getDatesInFuture()
 
       expect(dates.length).toEqual(5)
     })
@@ -177,7 +195,7 @@ describe('DepartureDateUtil', () => {
         }
       ]
       const util = new DepartureDateUtil(DepartureDay.TOMORROW, departureTimes)
-      const dates: Date[] = util.getDates()
+      const dates: Date[] = util.getDatesInFuture()
 
       expect(dates.length).toEqual(3)
       expect(dates[0].getHours()).toEqual(7)

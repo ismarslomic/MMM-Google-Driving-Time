@@ -3,10 +3,11 @@ import { Config } from '../src/types/Config'
 import { Client } from '@googlemaps/google-maps-services-js'
 import { ModuleNotification } from '../src/constants/ModuleNotification'
 import { DepartureDay } from '../src/types/DepartureDay'
+import 'jest-given-when-then'
 
 describe('Backend', () => {
   let helper
-  const mockedDistancematrix = jest.fn()
+  const mockedGoogleMatrixApi = jest.fn()
   let mockedSendSocketNotification
   let config: Config
 
@@ -15,7 +16,7 @@ describe('Backend', () => {
     helper.setName('MMM-Google-Driving-Time')
 
     // Mock the Google Distance Matrix API and return mocked response
-    Client.prototype.distancematrix = mockedDistancematrix
+    Client.prototype.distancematrix = mockedGoogleMatrixApi
 
     // Mock the MMM sendSocketNotification function which returns data back to the frontend
     mockedSendSocketNotification = helper.sendSocketNotification.mock
@@ -37,102 +38,113 @@ describe('Backend', () => {
     jest.clearAllMocks()
   })
 
-  test('GIVEN starting the module THEN log starting module to console', () => {
-    mockedDistancematrix.mockReturnValue(Promise.resolve(successfulResponse()))
-
-    helper.start()
-
+  describe('Printing to console when starting the Backend module', () => {
+    When(() => helper.start())
     // eslint-disable-next-line no-console
-    expect(console.log).toHaveBeenCalledWith('Starting module helper: MMM-Google-Driving-Time')
+    Then(() => expect(console.log).toHaveBeenCalledWith('Starting module helper: MMM-Google-Driving-Time'))
   })
 
-  test('GIVEN valid request WHEN response is successful THEN response is sent via socket', async () => {
-    mockedDistancematrix.mockReturnValue(Promise.resolve(successfulResponse()))
-
-    helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
-    jest.useRealTimers()
-    await global.waitForAsync()
-
-    expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_SUCCESS_RESPONSE)
-    expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
-      lastUpdate: expect.any(Number),
-      drivingTime: {
-        drivingDepartures: [
-          {
-            departureTime: expect.any(Date)
-          }
+  describe('Responding with successful notification via websocket', () => {
+    describe('Departure times in the past are ignored when departure day is today', () => {
+      Given(() => {
+        mockedGoogleMatrixApi.mockReturnValue(Promise.resolve(successfulResponse()))
+        config.departureDate = DepartureDay.TODAY
+        config.departureTimes = [
+          { hours: 7, minutes: 0 },
+          { hours: 8, minutes: 0 },
+          { hours: 9, minutes: 0 },
+          { hours: 10, minutes: 0 }
         ]
-      }
+      })
+      When(async (done) => {
+        helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
+        jest.useRealTimers()
+        await global.waitForAsync()
+        done()
+      })
+      Then(() => expect(mockedGoogleMatrixApi).toBeCalledTimes(2))
+      And(() => expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_SUCCESS_RESPONSE))
+      And(() => expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({ lastUpdate: expect.any(Number) }))
     })
-  })
 
-  test('GIVEN requested departureTime is in the past WHEN when requesting driving time THEN no request to google api shall be done', async () => {
-    mockedDistancematrix.mockReturnValue(Promise.resolve(successfulResponse()))
-
-    config.departureTimes = [{ hours: 6, minutes: 0 }]
-
-    helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
-    jest.useRealTimers()
-    await global.waitForAsync()
-
-    expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_SUCCESS_RESPONSE)
-    expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
-      lastUpdate: expect.any(Number),
-      drivingTime: {
-        drivingDepartures: [
-          {
-            departureTime: expect.any(Date)
-          }
+    describe('When all departure times are in the past then empty list is returned', () => {
+      Given(() => {
+        mockedGoogleMatrixApi.mockReturnValue(Promise.resolve(successfulResponse()))
+        config.departureDate = DepartureDay.TODAY
+        config.departureTimes = [
+          { hours: 7, minutes: 0 },
+          { hours: 8, minutes: 0 }
         ]
-      }
+      })
+      When(async (done) => {
+        helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
+        jest.useRealTimers()
+        await global.waitForAsync()
+        done()
+      })
+      Then(() => expect(mockedGoogleMatrixApi).toBeCalledTimes(0))
+      And(() => expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_SUCCESS_RESPONSE))
+      And(() => expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({ lastUpdate: expect.any(Number) }))
     })
   })
 
-  test('GIVEN invalid request WHEN response is failed THEN response with error is sent via socker', async () => {
-    mockedDistancematrix.mockReturnValue(Promise.resolve(successfulResponse()))
-    config.departureTimes = []
+  describe('Responding with failed notification via websocket', () => {
 
-    helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
+    describe('Request has empty array of departure times', () => {
+      Given(() => config.departureTimes = [])
+      When(async (done) => {
+        helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
+        jest.useRealTimers()
+        await global.waitForAsync()
+        done()
+      })
+      Then(() => expect(mockedGoogleMatrixApi).toBeCalledTimes(0))
+      And(() => expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE))
+      And(() => {
+        expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
+          lastUpdate: expect.any(Number),
+          error: 'Error retrieving driving time, check console.',
+          details: 'Array of departureTimes is not valid. Maybe it is undefined, null or empty?'
+        })
+      })
+    })
 
-    jest.useRealTimers()
-    await global.waitForAsync()
+    describe('Google Matrix API responds with NOT FOUND error', () => {
+      Given(() => mockedGoogleMatrixApi.mockReturnValue(Promise.resolve(notFoundStatusResponse())))
+      When(async (done) => {
+        helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
+        jest.useRealTimers()
+        await global.waitForAsync()
+        done()
+      })
+      Then(() => expect(mockedGoogleMatrixApi).toBeCalledTimes(1))
+      And(() => expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE))
+      And(() => {
+        expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
+          lastUpdate: expect.any(Number),
+          error: 'Error retrieving driving time, check console.',
+          details: 'Error occurred in one or more of the service calls to Google Distance Matrix API'
+        })
+      })
+    })
 
-    expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE)
-    expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
-      lastUpdate: expect.any(Number),
-      error: 'Error retrieving driving time, check console.',
-      details: 'Array of departureTimes is not valid. Maybe it is undefined, null or empty?'
+    describe('Google Matrix API responds with undefined data object', () => {
+      Given(() => mockedGoogleMatrixApi.mockReturnValue(Promise.resolve(undefinedDataResponse())))
+      When(async (done) => {
+        helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
+        jest.useRealTimers()
+        await global.waitForAsync()
+        done()
+      })
+      Then(() => expect(mockedGoogleMatrixApi).toBeCalledTimes(1))
+      And(() => expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE))
+      And(() => {
+        expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
+          lastUpdate: expect.any(Number),
+          error: 'Error retrieving driving time, check console.',
+          details: 'Data returned from Google Distance Matrix Service where undefined.'
+        })
+      })
     })
   })
-
-  test('GIVEN error status WHEN google api responds THEN response with error is sent via socker', async () => {
-    mockedDistancematrix.mockReturnValue(Promise.resolve(notFoundStatusResponse()))
-    helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
-
-    jest.useRealTimers()
-    await global.waitForAsync()
-
-    expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE)
-    expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
-      lastUpdate: expect.any(Number),
-      error: 'Error retrieving driving time, check console.',
-      details: 'Error occurred in one or more of the service calls to Google Distance Matrix API'
-    })
-  })
-
-  test('GIVEN undefined data WHEN google api responds THEN response with error is sent via socker', async () => {
-    mockedDistancematrix.mockReturnValue(Promise.resolve(undefinedDataResponse()))
-    helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
-
-    jest.useRealTimers()
-    await global.waitForAsync()
-
-    expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE)
-    expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
-      lastUpdate: expect.any(Number),
-      error: 'Error retrieving driving time, check console.',
-      details: 'Data returned from Google Distance Matrix Service where undefined.'
-    })
-  })
-
 })

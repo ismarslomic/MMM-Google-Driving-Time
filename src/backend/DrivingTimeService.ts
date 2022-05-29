@@ -13,42 +13,36 @@ const langService = new HumanizeDurationLanguage()
 const humanizer = new HumanizeDuration(langService)
 
 export class DrivingTimeService {
-  static async requestDrivingTime(dtRequest: DrivingTimeRequest): Promise<DrivingTimeResponse> {
+  /**
+   * Returns driving time for the departure times in the future.
+   *
+   * @param dtRequest request to be sent to Google Matrix API
+   * @returns DrivingTimeResponse if requested at least one departure time in the future and Google found the
+   * origin and destination. Return undefined if none departure times in the future were requested.
+   */
+  static async requestDrivingTime(dtRequest: DrivingTimeRequest): Promise<DrivingTimeResponse | undefined> {
     Log.info(`Requesting driving time from Google.`)
 
     const requests = this.createDistanceMatrixRequest(dtRequest)
     const promises = Promise.all(requests.map((request) => this.callGoogleMatrixApi(request)))
 
     return promises
-    .then((responses) => {
-       const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
-        const firstResponse = responses[0]
-        firstResponse.drivingDepartures = drivingDepartures
-        return firstResponse
-      }
-    ).catch((error) => {
-      if (error) {
-        throw Error(error.message || error)
-      } else
-        throw Error('Error occurred in one or more of the service calls to Google Distance Matrix API')
-    })
+      .then((responses) => {
+          if(responses.length == 0){
+            return undefined
+          }
 
-    /*
-  return new Promise((resolve, reject) => {
-    googleClient
-      .distancematrix(dmRequest)
-      .then(async (response) => {
-        // request status: r.data.status === Status.OK
-        // row element status: r.data.rows[0].elements[0].status === Status.OK
-        // check if response.data is undefined, can be undefined if network issues
-        const normalDurationInSeconds = response.data.rows[0].elements[0].duration.value
-        const drivingDepartures = [this.mapToDrivingDeparture(response, dtRequest.language, normalDurationInSeconds, new Date())]
-        resolve(this.mapToDrivingTimeResponse(response, drivingDepartures))
+          const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
+          const firstResponse = responses[0]
+          firstResponse.drivingDepartures = drivingDepartures
+          return firstResponse
+        }
+      ).catch((error) => {
+        if (error) {
+          throw Error(error.message || error)
+        } else
+          throw Error('Error occurred in one or more of the service calls to Google Distance Matrix API')
       })
-      .catch((error) => {
-        reject(error.message)
-      })
-  })*/
   }
 
   private static async callGoogleMatrixApi(request: DistanceMatrixRequest): Promise<DrivingTimeResponse> {
@@ -56,28 +50,28 @@ export class DrivingTimeService {
 
     return new Promise((resolve, reject) => {
       googleClient
-      .distancematrix(request)
-      .then(async (response: DistanceMatrixResponse) => {
-        if (!response.data) {
-          reject('Data returned from Google Distance Matrix Service where undefined.')
-        } else if (response.data.status !== Status.OK) {
-          reject(response.data.error_message)
-        } else if (response.data.rows[0].elements[0].status !== Status.OK) {
-          reject(`Status for row data from Google Distance Matrix Service where ${response.data.rows[0].elements[0].status}`)
-        }
+        .distancematrix(request)
+        .then(async (response: DistanceMatrixResponse) => {
+          if (!response.data) {
+            reject('Data returned from Google Distance Matrix Service where undefined.')
+          } else if (response.data.status !== Status.OK) {
+            reject(response.data.error_message)
+          } else if (response.data.rows[0].elements[0].status !== Status.OK) {
+            reject(`Status for row data from Google Distance Matrix Service where ${response.data.rows[0].elements[0].status}`)
+          }
 
-        const normalDurationInSeconds = response.data.rows[0].elements[0].duration.value
-        const drivingDepartures = [this.mapToDrivingDeparture(response, request.params.language, normalDurationInSeconds, new Date(request.params.departure_time))]
-        resolve(this.mapToDrivingTimeResponse(response, drivingDepartures))
-      })
-      .catch((error) => {
-        reject(error.message)
-      })
+          const normalDurationInSeconds = response.data.rows[0].elements[0].duration.value
+          const drivingDepartures = [this.mapToDrivingDeparture(response, request.params.language, normalDurationInSeconds, new Date(request.params.departure_time))]
+          resolve(this.mapToDrivingTimeResponse(response, drivingDepartures))
+        })
+        .catch((error) => {
+          reject(error.message)
+        })
     })
   }
 
   private static createDistanceMatrixRequest(dtRequest: DrivingTimeRequest): DistanceMatrixRequest[] {
-    const departureDates = new DepartureDateUtil(dtRequest.departureDate, dtRequest.departureTimes).getDates()
+    const departureDates = new DepartureDateUtil(dtRequest.departureDate, dtRequest.departureTimes).getDatesInFuture()
 
     return departureDates.map((departureDate) => {
       return {

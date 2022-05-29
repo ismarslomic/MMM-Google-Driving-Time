@@ -12,6 +12,7 @@ describe('Frontend', () => {
     jest.resetModules()
     require('../MMM-Google-Driving-Time')
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     MMMGoogleDriveTime = global.Module.create(name)
     MMMGoogleDriveTime.setData({ name, identifier: `Module_1_${name}` })
@@ -28,6 +29,4 @@ describe('Frontend', () => {
   test('inits module with state loading === true', () => {
     expect(MMMGoogleDriveTime.loading).toBe(true)
   })
-
-
 })

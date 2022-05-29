@@ -9,6 +9,13 @@ declare const moment: any
 
 Module.register<Config>('MMM-Google-Driving-Time', {
   /**
+   * A string that defines the minimum version of the MagicMirror framework. If it is set, the
+   * system compares the required version with the users version. If the version of the user is
+   * out of date, it won't run the module.
+   */
+  requiresVersion: '2.19.0',
+
+  /**
    * Any properties defined in the defaults object, will be merged with the module config as
    * defined in the user's config.js file. This is the best place to set your modules'
    * configuration defaults. Any of the module configuration properties can be accessed using
@@ -80,6 +87,11 @@ Module.register<Config>('MMM-Google-Driving-Time', {
       drivingTime: this.state?.drivingTime
     }
   },
+
+  /**
+   * @member {boolean} loading - Flag to indicate the loading state of the module.
+   */
+  loading: true,
 
   /**
    * This method is called when all modules are loaded and the system is ready to boot up.

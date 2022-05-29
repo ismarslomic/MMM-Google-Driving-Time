@@ -66,6 +66,28 @@ describe('Backend', () => {
     })
   })
 
+  test('GIVEN requested departureTime is in the past WHEN when requesting driving time THEN no request to google api shall be done', async () => {
+    mockedDistancematrix.mockReturnValue(Promise.resolve(successfulResponse()))
+
+    config.departureTimes = [{ hours: 6, minutes: 0 }]
+
+    helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
+    jest.useRealTimers()
+    await global.waitForAsync()
+
+    expect(mockedSendSocketNotification.calls[0][0]).toBe(ModuleNotification.DRIVING_TIME_SUCCESS_RESPONSE)
+    expect(mockedSendSocketNotification.calls[0][1]).toMatchSnapshot({
+      lastUpdate: expect.any(Number),
+      drivingTime: {
+        drivingDepartures: [
+          {
+            departureTime: expect.any(Date)
+          }
+        ]
+      }
+    })
+  })
+
   test('GIVEN invalid request WHEN response is failed THEN response with error is sent via socker', async () => {
     mockedDistancematrix.mockReturnValue(Promise.resolve(successfulResponse()))
     config.departureTimes = []

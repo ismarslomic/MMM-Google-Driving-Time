@@ -8,6 +8,12 @@ import { Config } from '../types/Config'
 import { DrivingTimeRequest } from '../types/DrivingTimeRequest'
 
 module.exports = NodeHelper.create({
+  /**
+   * A string that defines the minimum version of the MagicMirror framework. If it is set, the
+   * system compares the required version with the users version. If the version of the user is
+   * out of date, it won't run the module.
+   */
+  requiresVersion: '2.19.0',
 
   async socketNotificationReceived(notification: ModuleNotification, config: Config) {
     if (notification !== ModuleNotification.DRIVING_TIME_REQUEST) {

@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Frontend has correct defaults 1`] = `
+Object {
+  "apiKey": undefined,
+  "departureDate": "TODAY",
+  "departureTimes": Array [
+    Object {
+      "hours": 13,
+      "minutes": 30,
+    },
+  ],
+  "destination": undefined,
+  "language": undefined,
+  "lastUpdateFormat": "HH:mm",
+  "origin": undefined,
+  "trafficModel": "best_guess",
+  "updateIntervalInSeconds": 5,
+}
+`;

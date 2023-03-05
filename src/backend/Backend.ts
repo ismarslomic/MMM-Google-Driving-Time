@@ -20,7 +20,7 @@ module.exports = NodeHelper.create({
       Log.warn(`${notification} is invalid notification`)
     }
 
-    try{
+    try {
       const request: DrivingTimeRequest = {
         origin: config.origin,
         destination: config.destination,
@@ -38,7 +38,7 @@ module.exports = NodeHelper.create({
       }
 
       this.sendSocketNotification(ModuleNotification.DRIVING_TIME_SUCCESS_RESPONSE, successResponse)
-    } catch(error){
+    } catch (error) {
       const failedResponse = {
         lastUpdate: Date.now(),
         error: 'Error retrieving driving time, check console.',
@@ -48,6 +48,5 @@ module.exports = NodeHelper.create({
       Log.error((error && error.message) || error)
       this.sendSocketNotification(ModuleNotification.DRIVING_TIME_FAILED_RESPONSE, failedResponse)
     }
-
   }
 })

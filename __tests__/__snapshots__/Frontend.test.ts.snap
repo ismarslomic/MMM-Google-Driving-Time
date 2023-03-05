@@ -1,11 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Frontend has correct defaults 1`] = `
-Object {
+{
   "apiKey": undefined,
   "departureDate": "TODAY",
-  "departureTimes": Array [
-    Object {
+  "departureTimes": [
+    {
       "hours": 13,
       "minutes": 30,
     },

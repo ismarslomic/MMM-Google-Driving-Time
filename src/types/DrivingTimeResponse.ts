@@ -22,7 +22,7 @@ export type DrivingTimeResponse = {
   /**
    * The length of time it takes to travel this route without taking in account current and historical traffic conditions.
    */
-  duration: DrivingDuration,
+  duration: DrivingDuration
   /**
    * The length of time it takes to drive the route on specific departure times in the future
    */

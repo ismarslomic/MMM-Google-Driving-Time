@@ -8,7 +8,7 @@
     "@typescript-eslint/no-unused-vars": "error"
   },
   "settings": {
-    "import/core-modules": [ "node_helper" ]
+    "import/core-modules": ["node_helper"]
   },
   "env": {
     "browser": true,

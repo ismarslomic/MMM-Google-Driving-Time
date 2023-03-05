@@ -1,4 +1,4 @@
 export type DepartureTime = {
-  hours: number,
+  hours: number
   minutes: number
 }

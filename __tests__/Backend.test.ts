@@ -89,9 +89,8 @@ describe('Backend', () => {
   })
 
   describe('Responding with failed notification via websocket', () => {
-
     describe('Request has empty array of departure times', () => {
-      Given(() => config.departureTimes = [])
+      Given(() => (config.departureTimes = []))
       When(async (done) => {
         helper.socketNotificationReceived(ModuleNotification.DRIVING_TIME_REQUEST, config)
         jest.useRealTimers()

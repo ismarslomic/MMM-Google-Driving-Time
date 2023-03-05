@@ -6,7 +6,7 @@ export type DrivingDuration = {
   /**
    * The length of time in seconds
    */
-  inSeconds: number,
+  inSeconds: number
   /**
    * The length of time as localized text
    */

@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Backend Responding with failed notification via websocket Google Matrix API responds with NOT FOUND error then  1`] = `
-Object {
+{
   "details": "Error occurred in one or more of the service calls to Google Distance Matrix API",
   "error": "Error retrieving driving time, check console.",
   "lastUpdate": Any<Number>,
@@ -9,7 +9,7 @@ Object {
 `;
 
 exports[`Backend Responding with failed notification via websocket Google Matrix API responds with undefined data object then  1`] = `
-Object {
+{
   "details": "Data returned from Google Distance Matrix Service where undefined.",
   "error": "Error retrieving driving time, check console.",
   "lastUpdate": Any<Number>,
@@ -17,7 +17,7 @@ Object {
 `;
 
 exports[`Backend Responding with failed notification via websocket Request has empty array of departure times then  1`] = `
-Object {
+{
   "details": "Array of departureTimes is not valid. Maybe it is undefined, null or empty?",
   "error": "Error retrieving driving time, check console.",
   "lastUpdate": Any<Number>,
@@ -25,38 +25,38 @@ Object {
 `;
 
 exports[`Backend Responding with successful notification via websocket Departure times in the past are ignored when departure day is today then  1`] = `
-Object {
-  "drivingTime": Object {
+{
+  "drivingTime": {
     "destination": "Gøteborggata 32, 0566 Oslo, Norge",
-    "distance": Object {
+    "distance": {
       "description": "203 km",
       "inMeter": 203466,
     },
-    "drivingDepartures": Array [
-      Object {
+    "drivingDepartures": [
+      {
         "departureTime": 2022-05-01T07:00:00.000Z,
-        "durationDiff": Object {
+        "durationDiff": {
           "description": "-12 min",
           "inSeconds": -718,
         },
-        "durationInTraffic": Object {
+        "durationInTraffic": {
           "description": "2 timer 48 min",
           "inSeconds": 10064,
         },
       },
-      Object {
+      {
         "departureTime": 2022-05-01T08:00:00.000Z,
-        "durationDiff": Object {
+        "durationDiff": {
           "description": "-12 min",
           "inSeconds": -718,
         },
-        "durationInTraffic": Object {
+        "durationInTraffic": {
           "description": "2 timer 48 min",
           "inSeconds": 10064,
         },
       },
     ],
-    "duration": Object {
+    "duration": {
       "description": "3 timer 0 min",
       "inSeconds": 10782,
     },
@@ -67,7 +67,7 @@ Object {
 `;
 
 exports[`Backend Responding with successful notification via websocket When all departure times are in the past then empty list is returned then  1`] = `
-Object {
+{
   "drivingTime": undefined,
   "lastUpdate": Any<Number>,
 }

@@ -7,7 +7,7 @@ export type DrivingDeparture = {
   /**
    * Departure time (date and time) in future
    */
-  departureTime: Date,
+  departureTime: Date
   /**
    * The length of time it takes to drive this route, based on current and historical traffic conditions.
    */
@@ -23,7 +23,7 @@ export type DrivingDeparture = {
     /**
      * Difference in time duration expressed in seconds, negative means shorter time to travel then normally
      */
-    inSeconds: number,
+    inSeconds: number
     /**
      * Difference in time duration expressed as text, localized according to the query's language parameter.
      */

@@ -2,9 +2,8 @@ import banner2 from 'rollup-plugin-banner2'
 import commonjs from '@rollup/plugin-commonjs'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
-import { terser } from 'rollup-plugin-terser'
-
-import pkg from './package.json'
+import terser from '@rollup/plugin-terser'
+import pkg from './package.json' assert { type: 'json' }
 
 // Banner to be placed at the top of the compiled files
 const bannerText = `/*! *****************************************************************************

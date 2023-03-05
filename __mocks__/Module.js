@@ -42,8 +42,7 @@ global.Module = {
       },
 
       getTemplate() {
-        return '<div class="normal">' + this.name
-          + '</div><div class="small dimmed">' + this.identifier + '</div>'
+        return '<div class="normal">' + this.name + '</div><div class="small dimmed">' + this.identifier + '</div>'
       },
 
       getTemplateData() {
@@ -52,11 +51,9 @@ global.Module = {
 
       notificationReceived(notification, payload, sender) {
         if (sender) {
-          Log.log(this.name + ' received a module notification: ' + notification
-            + ' from sender: ' + sender.name)
+          Log.log(this.name + ' received a module notification: ' + notification + ' from sender: ' + sender.name)
         } else {
-          Log.log(
-            this.name + ' received a system notification: ' + notification)
+          Log.log(this.name + ' received a system notification: ' + notification)
         }
       },
 
@@ -65,8 +62,7 @@ global.Module = {
       },
 
       socketNotificationReceived(notification, payload) {
-        Log.log(this.name + ' received a socket notification: ' + notification
-          + ' - Payload: ' + payload)
+        Log.log(this.name + ' received a socket notification: ' + notification + ' - Payload: ' + payload)
       },
 
       suspend() {

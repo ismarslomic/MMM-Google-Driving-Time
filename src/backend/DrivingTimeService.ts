@@ -28,20 +28,19 @@ export class DrivingTimeService {
 
     return promises
       .then((responses) => {
-          if(responses.length == 0){
-            return undefined
-          }
-
-          const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
-          const firstResponse = responses[0]
-          firstResponse.drivingDepartures = drivingDepartures
-          return firstResponse
+        if (responses.length == 0) {
+          return undefined
         }
-      ).catch((error) => {
+
+        const drivingDepartures = responses.map((response) => response.drivingDepartures[0])
+        const firstResponse = responses[0]
+        firstResponse.drivingDepartures = drivingDepartures
+        return firstResponse
+      })
+      .catch((error) => {
         if (error) {
           throw Error(error.message || error)
-        } else
-          throw Error('Error occurred in one or more of the service calls to Google Distance Matrix API')
+        } else throw Error('Error occurred in one or more of the service calls to Google Distance Matrix API')
       })
   }
 
@@ -57,11 +56,20 @@ export class DrivingTimeService {
           } else if (response.data.status !== Status.OK) {
             reject(response.data.error_message)
           } else if (response.data.rows[0].elements[0].status !== Status.OK) {
-            reject(`Status for row data from Google Distance Matrix Service where ${response.data.rows[0].elements[0].status}`)
+            reject(
+              `Status for row data from Google Distance Matrix Service where ${response.data.rows[0].elements[0].status}`
+            )
           }
 
           const normalDurationInSeconds = response.data.rows[0].elements[0].duration.value
-          const drivingDepartures = [this.mapToDrivingDeparture(response, request.params.language, normalDurationInSeconds, new Date(request.params.departure_time))]
+          const drivingDepartures = [
+            this.mapToDrivingDeparture(
+              response,
+              request.params.language,
+              normalDurationInSeconds,
+              new Date(request.params.departure_time)
+            )
+          ]
           resolve(this.mapToDrivingTimeResponse(response, drivingDepartures))
         })
         .catch((error) => {
@@ -99,7 +107,12 @@ export class DrivingTimeService {
     }
   }
 
-  private static mapToDrivingDeparture(response: DistanceMatrixResponse, language: string, normalDurationInSeconds: number, departureTime: Date): DrivingDeparture {
+  private static mapToDrivingDeparture(
+    response: DistanceMatrixResponse,
+    language: string,
+    normalDurationInSeconds: number,
+    departureTime: Date
+  ): DrivingDeparture {
     const firstElement = response.data.rows[0].elements[0]
     const durationDiffInSeconds = firstElement.duration_in_traffic.value - normalDurationInSeconds
 
@@ -137,7 +150,10 @@ export class DrivingTimeService {
     }
   }
 
-  private static mapToDrivingTimeResponse(parent: DistanceMatrixResponse, drivingDepartures: DrivingDeparture[]): DrivingTimeResponse {
+  private static mapToDrivingTimeResponse(
+    parent: DistanceMatrixResponse,
+    drivingDepartures: DrivingDeparture[]
+  ): DrivingTimeResponse {
     const firstElement = parent.data.rows[0].elements[0]
 
     return {
